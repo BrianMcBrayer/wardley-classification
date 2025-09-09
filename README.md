@@ -1,6 +1,6 @@
 ## Wardley EVTP Role Quiz
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Visit_Now-blue?style=for-the-badge)](https://brianmcbrayer.github.io/wardley-classification/) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 
 An elegant, single-file quiz that helps you discover which role from Simon Wardley’s EVTP framework best fits you: Explorer, Villager, or Town Planner. Built with vanilla HTML/JS and Tailwind via CDN — no build step, no dependencies.
 
@@ -23,6 +23,11 @@ python3 -m http.server 8080
 
 ### What is EVTP?
 EVTP stands for Explorers, Villagers, and Town Planners — three complementary roles in Wardley’s strategy framework. This quiz offers a lightweight way to self-assess which role you naturally lean toward.
+
+### Live Demo
+🚀 **[Try the quiz now!](https://brianmcbrayer.github.io/wardley-classification/)**
+
+The live version is automatically deployed via GitHub Actions whenever changes are pushed to the main branch. You can also view the original framework by Simon Wardley [here](https://blog.gardeviance.org/2023/12/how-to-organise-yourself-dangerous-path.html).
 
 ### Project structure
 ```
