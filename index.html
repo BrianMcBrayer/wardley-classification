@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EVTP Framework Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .quiz-option {
+            transition: all 0.2s ease-in-out;
+        }
+        .quiz-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 flex items-center justify-center min-h-screen p-4">
+
+    <div id="app-container" class="w-full max-w-2xl mx-auto">
+        
+        <!-- Start Screen -->
+        <div id="start-screen" class="text-center bg-white p-8 rounded-2xl shadow-lg">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900 mb-4">What's Your Role?</h1>
+            <p class="text-slate-600 mb-2">A Quiz on Wardley's Explorers, Villagers, & Town Planners Framework</p>
+            <p class="text-sm text-slate-500 mb-8">Answer 8 questions to find out which role best describes you.</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button onclick="startQuiz()" class="bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-75 transition-colors w-full sm:w-auto">
+                    Start Quiz
+                </button>
+                <button onclick="showFrameworkModal()" class="bg-slate-200 text-slate-700 font-semibold py-3 px-6 rounded-lg hover:bg-slate-300 focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-opacity-75 transition-colors w-full sm:w-auto">
+                    View Framework
+                </button>
+            </div>
+            <p class="text-xs text-slate-500 mt-6">
+                Learn more about the EVTP framework: <a href="https://blog.gardeviance.org/2023/12/how-to-organise-yourself-dangerous-path.html" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-800 underline">Simon Wardley's original post</a>
+            </p>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="hidden">
+            <div class="bg-white p-8 rounded-2xl shadow-lg">
+                <div id="progress-bar-container" class="w-full bg-slate-200 rounded-full h-2.5 mb-6">
+                    <div id="progress-bar" class="bg-indigo-600 h-2.5 rounded-full" style="width: 0%"></div>
+                </div>
+                <h2 id="question-text" class="text-2xl font-bold mb-6 text-slate-900 text-center">Question text goes here...</h2>
+                <div id="answer-options" class="grid grid-cols-1 gap-4">
+                    <!-- Options will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="hidden text-center bg-white p-8 rounded-2xl shadow-lg">
+            <h2 class="text-2xl font-semibold text-slate-600 mb-2">Your result is...</h2>
+            <h1 id="result-title" class="text-4xl md:text-5xl font-bold text-indigo-600 mb-4"></h1>
+            <p id="result-description" class="text-slate-600 max-w-xl mx-auto mb-6"></p>
+            <img src="EVTP.011.jpeg" alt="Explorers, Villagers, Town Planners Framework by Simon Wardley" class="rounded-lg border border-slate-200 shadow-sm my-8">
+            <p class="text-xs text-slate-500 mb-6 max-w-xl mx-auto">
+                Image courtesy of <a href="https://blog.gardeviance.org/2023/12/how-to-organise-yourself-dangerous-path.html" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-800 underline">Simon Wardley's blog post "How to organise yourself: a dangerous path"</a>
+            </p>
+            <button onclick="restartQuiz()" class="bg-indigo-600 text-white font-semibold py-3 px-6 rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-75 transition-colors">
+                Take Again
+            </button>
+        </div>
+
+        <!-- Framework Modal -->
+        <div id="framework-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
+            <div class="bg-white rounded-2xl p-6 md:p-8 max-w-4xl w-full relative">
+                <button onclick="closeFrameworkModal()" class="absolute top-4 right-4 text-slate-500 hover:text-slate-800" aria-label="Close">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+                <h2 class="text-2xl font-bold mb-4 text-slate-900">EVTP Framework</h2>
+                 <img src="EVTP.011.jpeg" alt="Explorers, Villagers, Town Planners Framework by Simon Wardley" class="rounded-lg border border-slate-200 w-full mb-4">
+                <p class="text-xs text-slate-500">
+                    Image courtesy of <a href="https://blog.gardeviance.org/2023/12/how-to-organise-yourself-dangerous-path.html" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-800 underline">Simon Wardley's blog post "How to organise yourself: a dangerous path"</a>
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const startScreen = document.getElementById('start-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        const questionText = document.getElementById('question-text');
+        const answerOptions = document.getElementById('answer-options');
+        const progressBar = document.getElementById('progress-bar');
+        const resultTitle = document.getElementById('result-title');
+        const resultDescription = document.getElementById('result-description');
+        const frameworkModal = document.getElementById('framework-modal');
+
+        const quizQuestions = [
+            {
+                question: "Which environment energizes you the most?",
+                answers: [
+                    { text: "A chaotic, undefined space where new discoveries are paramount.", type: "explorer" },
+                    { text: "A growing, changing market where I can improve and scale good ideas.", type: "villager" },
+                    { text: "A stable, well-understood environment focused on operational efficiency.", type: "townPlanner" }
+                ]
+            },
+            {
+                question: "How do you prefer to make decisions?",
+                answers: [
+                    { text: "Based on gut feel, intuition, and bold gambles.", type: "explorer" },
+                    { text: "Through market analysis, user feedback, and spotting trends.", type: "villager" },
+                    { text: "Using detailed metrics, analytics, and scientific modeling.", type: "townPlanner" }
+                ]
+            },
+            {
+                question: "What is your attitude towards failure?",
+                answers: [
+                    { text: "It's an essential and expected part of experimentation and learning.", type: "explorer" },
+                    { text: "A valuable source of feedback for constant improvement.", type: "villager" },
+                    { text: "An outcome to be minimized or avoided through careful planning.", type: "townPlanner" }
+                ]
+            },
+            {
+                question: "What kind of problem are you drawn to?",
+                answers: [
+                    { text: "Something rare, novel, and poorly understood.", type: "explorer" },
+                    { text: "A maturing product that needs feature differentiation and higher profitability.", type: "villager" },
+                    { text: "A common, well-defined problem that can be standardized and scaled.", type: "townPlanner" }
+                ]
+            },
+            {
+                question: "How do you view your relationship with customers?",
+                answers: [
+                    { text: "I often have to ignore them initially to build the core vision.", type: "explorer" },
+                    { text: "They are my primary source of feedback for evolving the product.", type: "villager" },
+                    { text: "My job is to build exactly what is needed based on established demand.", type: "townPlanner" }
+                ]
+            },
+            {
+                question: "Which of these concepts is most appealing?",
+                answers: [
+                    { text: "High future value, even with constant change and uncertainty.", type: "explorer" },
+                    { text: "High profitability and building a thriving ecosystem.", type: "villager" },
+                    { text: "High volume and being an essential, stable cost of doing business.", type: "townPlanner" }
+                ]
+            },
+            {
+                question: "Which methodology do you naturally lean towards?",
+                answers: [
+                    { text: "Agile and rapid prototyping on common components.", type: "explorer" },
+                    { text: "Building out ecosystems and platforms for others to use.", type: "villager" },
+                    { text: "Six Sigma and process optimization to ensure quality at scale.", type: "townPlanner" }
+                ]
+            },
+            {
+                question: "Which analogy best fits your ideal project?",
+                answers: [
+                    { text: "Building a partially working 3D printer with spare parts just to see if it's possible.", type: "explorer" },
+                    { text: "Turning that half-baked printer into a reliable product that lots of people want to buy.", type: "villager" },
+                    { text: "Running the factory that efficiently mass-produces the parts for those printers.", type: "townPlanner" }
+                ]
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let scores = { explorer: 0, villager: 0, townPlanner: 0 };
+
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            scores = { explorer: 0, villager: 0, townPlanner: 0 };
+            startScreen.classList.add('hidden');
+            resultsScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            displayQuestion();
+        }
+        
+        function restartQuiz() {
+            startQuiz();
+        }
+
+        function displayQuestion() {
+            if (currentQuestionIndex >= quizQuestions.length) {
+                showResults();
+                return;
+            }
+
+            const progressPercentage = ((currentQuestionIndex) / quizQuestions.length) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
+
+            const currentQuestion = quizQuestions[currentQuestionIndex];
+            questionText.textContent = currentQuestion.question;
+            answerOptions.innerHTML = '';
+
+            const shuffledAnswers = [...currentQuestion.answers].sort(() => Math.random() - 0.5);
+
+            shuffledAnswers.forEach(answer => {
+                const button = document.createElement('button');
+                button.textContent = answer.text;
+                button.className = "quiz-option w-full text-left p-4 rounded-lg bg-slate-100 hover:bg-indigo-100 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-75";
+                button.onclick = () => selectAnswer(answer.type);
+                answerOptions.appendChild(button);
+            });
+        }
+
+        function selectAnswer(type) {
+            scores[type]++;
+            currentQuestionIndex++;
+            displayQuestion();
+        }
+
+        function showResults() {
+            quizScreen.classList.add('hidden');
+            resultsScreen.classList.remove('hidden');
+
+            let resultType = 'explorer';
+            if (scores.villager > scores.explorer && scores.villager > scores.townPlanner) {
+                resultType = 'villager';
+            } else if (scores.townPlanner > scores.explorer && scores.townPlanner > scores.villager) {
+                resultType = 'townPlanner';
+            } else if (scores.villager === scores.explorer && scores.explorer > scores.townPlanner) {
+                 resultType = Math.random() < 0.5 ? 'explorer' : 'villager';
+            } else if (scores.villager === scores.townPlanner && scores.townPlanner > scores.explorer) {
+                 resultType = Math.random() < 0.5 ? 'villager' : 'townPlanner';
+            }
+
+            const resultsData = {
+                explorer: {
+                    title: "You are an Explorer!",
+                    description: "Explorers are discoverers. They thrive in uncharted territory, mapping the landscape and showing what is possible. They deal with high uncertainty and failure to find future sources of value."
+                },
+                villager: {
+                    title: "You are a Villager!",
+                    description: "Villagers are industrializers. They take the discoveries of Explorers and turn them into valuable products and services. They are skilled at learning, adapting, listening to customers, and making things better for the benefit of many."
+                },
+                townPlanner: {
+                    title: "You are a Town Planner!",
+                    description: "Town Planners are commoditizers. They take industrialized products and services and make them incredibly efficient and reliable at a massive scale. They are driven by data and measurement to commoditize what is known for the benefit of all."
+                }
+            };
+
+            resultTitle.textContent = resultsData[resultType].title;
+            resultDescription.textContent = resultsData[resultType].description;
+        }
+
+        function showFrameworkModal() {
+            frameworkModal.classList.remove('hidden');
+        }
+
+        function closeFrameworkModal() {
+            frameworkModal.classList.add('hidden');
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeFrameworkModal();
+            }
+        });
+
+    </script>
+</body>
+</html>
+
