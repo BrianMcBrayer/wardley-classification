@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EVTP Framework Quiz</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/page/page.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -95,6 +96,9 @@
         const resultDescription = document.getElementById('result-description');
         const frameworkModal = document.getElementById('framework-modal');
 
+        let currentQuestionIndex = 0;
+        let scores = { explorer: 0, villager: 0, townPlanner: 0 };
+
         const quizQuestions = [
             {
                 question: "Which environment energizes you the most?",
@@ -162,56 +166,70 @@
             }
         ];
 
-        let currentQuestionIndex = 0;
-        let scores = { explorer: 0, villager: 0, townPlanner: 0 };
-
-        function startQuiz() {
-            currentQuestionIndex = 0;
-            scores = { explorer: 0, villager: 0, townPlanner: 0 };
-            startScreen.classList.add('hidden');
+        // Route handlers
+        function showHome() {
+            startScreen.classList.remove('hidden');
+            quizScreen.classList.add('hidden');
             resultsScreen.classList.add('hidden');
-            quizScreen.classList.remove('hidden');
-            displayQuestion();
-        }
-        
-        function restartQuiz() {
-            startQuiz();
+            frameworkModal.classList.add('hidden');
         }
 
-        function displayQuestion() {
-            if (currentQuestionIndex >= quizQuestions.length) {
-                showResults();
+        function showQuiz(ctx) {
+            const questionIndex = ctx.params.questionIndex ? parseInt(ctx.params.questionIndex) - 1 : 0;
+            if (questionIndex < 0 || questionIndex >= quizQuestions.length) {
+                page('/quiz/1');
                 return;
             }
 
-            const progressPercentage = ((currentQuestionIndex) / quizQuestions.length) * 100;
-            progressBar.style.width = `${progressPercentage}%`;
+            // If we're navigating to a quiz route, load any existing state
+            // or set up the state for this question
+            const hasExistingState = loadQuizState();
 
-            const currentQuestion = quizQuestions[currentQuestionIndex];
-            questionText.textContent = currentQuestion.question;
-            answerOptions.innerHTML = '';
+            if (!hasExistingState) {
+                // No saved state, start fresh from this question
+                currentQuestionIndex = questionIndex;
+                scores = { explorer: 0, villager: 0, townPlanner: 0 };
+            } else {
+                // We have saved state, make sure we're at the right question
+                if (questionIndex !== currentQuestionIndex) {
+                    // User is trying to jump to a different question
+                    // Reset state and start from the requested question
+                    currentQuestionIndex = questionIndex;
+                    scores = { explorer: 0, villager: 0, townPlanner: 0 };
+                }
+            }
 
-            const shuffledAnswers = [...currentQuestion.answers].sort(() => Math.random() - 0.5);
-
-            shuffledAnswers.forEach(answer => {
-                const button = document.createElement('button');
-                button.textContent = answer.text;
-                button.className = "quiz-option w-full text-left p-4 rounded-lg bg-slate-100 hover:bg-indigo-100 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-75";
-                button.onclick = () => selectAnswer(answer.type);
-                answerOptions.appendChild(button);
-            });
-        }
-
-        function selectAnswer(type) {
-            scores[type]++;
-            currentQuestionIndex++;
+            startScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            resultsScreen.classList.add('hidden');
+            frameworkModal.classList.add('hidden');
             displayQuestion();
+            saveQuizState();
         }
 
         function showResults() {
+            startScreen.classList.add('hidden');
             quizScreen.classList.add('hidden');
             resultsScreen.classList.remove('hidden');
+            frameworkModal.classList.add('hidden');
 
+            // Try to load existing state, or use current state if quiz just completed
+            const hasExistingState = loadQuizState();
+
+            if (!hasExistingState && currentQuestionIndex < quizQuestions.length) {
+                // No saved state and quiz not complete, redirect to start
+                page('/');
+                return;
+            }
+
+            // Calculate and display results
+            calculateAndDisplayResults();
+
+            // Clear saved state since quiz is complete
+            clearQuizState();
+        }
+
+        function calculateAndDisplayResults() {
             let resultType = 'explorer';
             if (scores.villager > scores.explorer && scores.villager > scores.townPlanner) {
                 resultType = 'villager';
@@ -242,12 +260,113 @@
             resultDescription.textContent = resultsData[resultType].description;
         }
 
-        function showFrameworkModal() {
+        function showFramework() {
             frameworkModal.classList.remove('hidden');
         }
 
+        // Define routes with page.js
+        page('/', showHome);
+        page('/quiz', () => page('/quiz/1'));
+        page('/quiz/:questionIndex', showQuiz);
+        page('/results', showResults);
+        page('/framework', showFramework);
+
+        // Fallback route for any unrecognized paths
+        page('*', (ctx) => {
+            console.log('Unrecognized route:', ctx.path);
+            page('/');
+        });
+
+        // Start the router with hash-based routing for GitHub Pages
+        page({ hashbang: true });
+
+        // Quiz state persistence functions
+        function saveQuizState() {
+            const state = {
+                currentQuestionIndex,
+                scores,
+                timestamp: Date.now()
+            };
+            localStorage.setItem('wardleyQuizState', JSON.stringify(state));
+        }
+
+        function loadQuizState() {
+            try {
+                const saved = localStorage.getItem('wardleyQuizState');
+                if (saved) {
+                    const state = JSON.parse(saved);
+                    // Only restore if saved within the last hour
+                    if (Date.now() - state.timestamp < 3600000) {
+                        currentQuestionIndex = state.currentQuestionIndex;
+                        scores = state.scores;
+                        return true;
+                    }
+                }
+            } catch (e) {
+                console.warn('Failed to load quiz state:', e);
+            }
+            return false;
+        }
+
+        function clearQuizState() {
+            localStorage.removeItem('wardleyQuizState');
+        }
+
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            scores = { explorer: 0, villager: 0, townPlanner: 0 };
+            clearQuizState(); // Clear any existing saved state
+            page('/quiz/1');
+        }
+
+        function restartQuiz() {
+            page('/');
+        }
+
+        function displayQuestion() {
+            if (currentQuestionIndex >= quizQuestions.length) {
+                // Results will be shown by the router when navigating to /results
+                return;
+            }
+
+            const progressPercentage = ((currentQuestionIndex) / quizQuestions.length) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
+
+            const currentQuestion = quizQuestions[currentQuestionIndex];
+            questionText.textContent = currentQuestion.question;
+            answerOptions.innerHTML = '';
+
+            const shuffledAnswers = [...currentQuestion.answers].sort(() => Math.random() - 0.5);
+
+            shuffledAnswers.forEach(answer => {
+                const button = document.createElement('button');
+                button.textContent = answer.text;
+                button.className = "quiz-option w-full text-left p-4 rounded-lg bg-slate-100 hover:bg-indigo-100 border border-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-75";
+                button.onclick = () => selectAnswer(answer.type);
+                answerOptions.appendChild(button);
+            });
+        }
+
+        function selectAnswer(type) {
+            scores[type]++;
+            currentQuestionIndex++;
+            saveQuizState(); // Save progress after each answer
+            if (currentQuestionIndex >= quizQuestions.length) {
+                page('/results');
+            } else {
+                page(`/quiz/${currentQuestionIndex + 1}`);
+            }
+        }
+
+
+        function showFrameworkModal() {
+            page('/framework');
+        }
+
         function closeFrameworkModal() {
+            // Close modal and go back to previous route
             frameworkModal.classList.add('hidden');
+            page.back();
         }
 
         document.addEventListener('keydown', (event) => {
@@ -255,6 +374,7 @@
                 closeFrameworkModal();
             }
         });
+
 
     </script>
 </body>

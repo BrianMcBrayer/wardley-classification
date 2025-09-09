@@ -10,6 +10,24 @@ An elegant, single-file quiz that helps you discover which role from Simon Wardl
 - **Simple logic**: 8 questions, randomized answers, progress bar
 - **Tie handling**: fair random pick among tied top roles
 - **Accessible touches**: focus styles, Escape closes the framework modal
+- **URL-based navigation**: Shareable links to specific questions and states
+- **Browser history support**: Back/forward buttons work during navigation
+- **State persistence**: Quiz progress survives page refreshes (for 1 hour)
+
+### Navigation Features
+The quiz now supports modern web navigation with shareable URLs:
+
+- **Home**: `#/` or just the base URL
+- **Questions**: `#/quiz/1`, `#/quiz/2`, etc. (up to `#/quiz/8`)
+- **Results**: `#/results`
+- **Framework Modal**: `#/framework`
+
+**Examples:**
+- Direct link to question 3: `https://yourusername.github.io/yourrepo/#/quiz/3`
+- Share your results: `https://yourusername.github.io/yourrepo/#/results`
+- Link to framework explanation: `https://yourusername.github.io/yourrepo/#/framework`
+
+This works perfectly on GitHub Pages and other static hosting services using hash-based routing.
 
 ### Quick start
 - **Option A (double-click)**: Open `index.html` in your browser.
@@ -51,6 +69,7 @@ All content and logic live inside `index.html`.
 
 ### Tech stack
 - HTML + vanilla JavaScript
+- [page.js](https://github.com/visionmedia/page.js) for routing
 - Tailwind CSS via CDN
 - Google Fonts (Inter) via CDN
 
