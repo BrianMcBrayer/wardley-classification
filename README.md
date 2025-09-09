@@ -52,12 +52,14 @@ All content and logic live inside `index.html`.
 ### Deploy
 Because this is a static site, any static host works.
 
-- **GitHub Pages**
-  1. Push this repository to GitHub
-  2. In your repo, go to Settings → Pages
-  3. Set Source to “Deploy from a branch”, branch `main` (root)
-  4. Save — your site will be available shortly at `https://<username>.github.io/<repo>/`
+- **GitHub Pages** (Automatic via GitHub Actions)
+  1. Push this repository to GitHub (already done!)
+  2. The site automatically deploys when you push to the `main` branch
+  3. Check the "Actions" tab in your repository to see deployment status
+  4. Your site will be available at `https://BrianMcBrayer.github.io/wardley-classification/`
   5. See the official docs: [GitHub Pages](https://docs.github.com/en/pages)
+
+The GitHub Actions workflow (`.github/workflows/deploy.yml`) handles the deployment automatically on every push to main.
 
 ### Accessibility
 - Uses semantic buttons and visible focus rings
