@@ -1,0 +1,42 @@
+body {
+    display: grid;
+    place-items: center;
+    min-height: 100vh;
+    padding: 1rem;
+}
+
+#start-screen {
+    text-align: center;
+}
+
+#start-screen hgroup {
+    margin-bottom: 1.5rem;
+}
+
+/* This is the paragraph "Answer 8 questions..." */
+#start-screen hgroup + p {
+    margin-bottom: 1.5rem;
+}
+
+#start-screen .grid {
+    margin-bottom: 1.5rem;
+}
+
+#answer-options button {
+    width: 100%;
+    margin-bottom: 0.75rem;
+}
+
+#framework-modal article {
+    max-width: 80vw;
+}
+
+#results-columns {
+    grid-template-columns: 1fr 3fr; /* Make image column wider */
+    gap: 2rem;
+    align-items: start;
+}
+
+#results-image-col figure {
+    margin: 0;
+}
