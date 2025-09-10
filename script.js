@@ -265,6 +265,7 @@ function showFramework() {
 
 // Define routes with page.js
 page('/', showHome);
+page('/index', showHome);
 page('/quiz', () => page('/quiz/1'));
 page('/quiz/:questionIndex', showQuiz);
 page('/results/:resultType', showResults);
@@ -323,7 +324,7 @@ function startQuiz() {
 }
 
 function restartQuiz() {
-    page(window.location.pathname);
+    page('/index');
 }
 
 function shuffleArray(array) {
