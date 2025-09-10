@@ -127,7 +127,7 @@ function showResults(ctx) {
                 displayResult(resultsData[roleKeys[0]].name);
             } else {
                 // No valid roles found
-                page('/'); // Or show an error
+                page('/index'); // Or show an error
             }
 
         } else {
@@ -140,7 +140,7 @@ function showResults(ctx) {
         const hasExistingState = loadQuizState();
 
         if (!hasExistingState && currentQuestionIndex < quizQuestions.length) {
-            page('/');
+            page('/index');
             return;
         }
 
@@ -211,54 +211,6 @@ function displayResult(resultName) {
     resultDescription.innerHTML = `<p>${resultsData[resultType].description}</p>`;
 }
 
-/*
-function calculateAndDisplayResults() {
-    // Convert scores object to an array of [role, score] pairs and sort descending
-    const sortedScores = Object.entries(scores).sort((a, b) => b[1] - a[1]);
-
-    const highestScore = sortedScores[0][1];
-    const topRoles = sortedScores.filter(score => score[1] === highestScore).map(role => role[0]);
-
-    let resultTitleText;
-    let resultDescriptionHTML = '';
-
-    if (topRoles.length === 1) {
-        // No tie
-        const resultType = topRoles[0];
-        resultTitleText = resultsData[resultType].title;
-        resultDescriptionHTML = `<p>${resultsData[resultType].description}</p>`;
-    } else {
-        // It's a tie
-        topRoles.sort(); // Sort alphabetically for a canonical display
-        const roleNames = topRoles.map(role => resultsData[role].name);
-        
-        let tiedRolesText = roleNames.join(', ');
-        if (roleNames.length > 1) {
-            const last = roleNames.pop();
-            tiedRolesText = `${roleNames.join(', ')} and ${last}`;
-        }
-
-        resultTitleText = `You have a tie between ${tiedRolesText}!`;
-        
-        let descriptions = `<p>You have a tie between the following archetypes. Each of these roles has its unique strengths, and your results suggest you're a blend of them.</p>`;
-        descriptions += '<div>';
-        topRoles.forEach(role => {
-            descriptions += `
-                <div>
-                    <h3>${resultsData[role].name}</h3>
-                    <p>${resultsData[role].description}</p>
-                </div>
-            `;
-        });
-        descriptions += '</div>';
-        resultDescriptionHTML = descriptions;
-    }
-
-    resultTitle.textContent = resultTitleText;
-    resultDescription.innerHTML = resultDescriptionHTML;
-}
-*/
-
 function showFramework() {
     frameworkModal.showModal();
 }
@@ -275,11 +227,17 @@ page('/framework', showFramework);
 // Fallback route for any unrecognized paths
 page('*', (ctx) => {
     console.log('Unrecognized route:', ctx.path);
-    page('/');
+    page('/index');
 });
 
 async function main() {
     await loadQuizData();
+
+    frameworkModal.addEventListener('cancel', (event) => {
+        event.preventDefault();
+        closeFrameworkModal();
+    });
+
     // Start the router with hash-based routing for GitHub Pages
     page({ hashbang: true });
 }
@@ -403,17 +361,8 @@ function showFrameworkModal() {
 }
 
 function closeFrameworkModal() {
-    // Close modal and go back to previous route
-    if (frameworkModal.open) {
-        frameworkModal.close();
-    }
+    // Go back to the previous route. The handler for that route will close the modal.
     page.back();
 }
-
-document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && frameworkModal.open) {
-        closeFrameworkModal();
-    }
-});
 
 main();
