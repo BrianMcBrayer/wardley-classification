@@ -323,7 +323,7 @@ function startQuiz() {
 }
 
 function restartQuiz() {
-    page('/');
+    page(window.location.pathname);
 }
 
 function shuffleArray(array) {
